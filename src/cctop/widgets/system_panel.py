@@ -1,3 +1,5 @@
+"""System resources panel widget."""
+
 from textual.widgets import Static
 from rich.text import Text
 import psutil
@@ -8,17 +10,32 @@ from ..utils.formatting import format_duration
 
 
 class SystemPanel(Static):
-    """Display system resource usage"""
+    """Display system resource usage."""
 
     def __init__(self, **kwargs):
+        """Initialize system panel.
+
+        Args:
+            **kwargs: Additional widget parameters
+        """
         super().__init__(**kwargs)
         self.metrics = SystemMetrics()
 
     def update_metrics(self, metrics: SystemMetrics) -> None:
+        """Update metrics and refresh display.
+
+        Args:
+            metrics: Updated system metrics
+        """
         self.metrics = metrics
         self.refresh()
 
     def render(self) -> Text:
+        """Render system resource information.
+
+        Returns:
+            Text: Formatted system resources
+        """
         try:
             cpu_percent = psutil.cpu_percent(interval=0)
             memory = psutil.virtual_memory()
@@ -46,6 +63,15 @@ class SystemPanel(Static):
         return Text("\n").join(lines)
 
     def _make_bar(self, percent: float, width: int = 10) -> str:
+        """Create a text-based progress bar.
+
+        Args:
+            percent: Percentage value (0-100)
+            width: Width of bar in characters (default: 10)
+
+        Returns:
+            str: Text bar representation
+        """
         filled = int(percent / 10)
         filled = min(filled, width)
         empty = width - filled

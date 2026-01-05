@@ -1,3 +1,5 @@
+"""Notification bar widget for displaying alerts."""
+
 from textual.widgets import Static
 from rich.text import Text
 from typing import List
@@ -6,17 +8,32 @@ from ..models.agent import Agent
 
 
 class NotificationBar(Static):
-    """Display notifications for agents waiting for user input"""
+    """Display notifications for agents waiting for user input."""
 
     def __init__(self, **kwargs):
+        """Initialize notification bar.
+
+        Args:
+            **kwargs: Additional widget parameters
+        """
         super().__init__(**kwargs)
         self.waiting_agents: List[Agent] = []
 
     def update_waiting_agents(self, agents: List[Agent]) -> None:
+        """Update list of waiting agents and refresh display.
+
+        Args:
+            agents: List of agents waiting for user input
+        """
         self.waiting_agents = agents
         self.refresh()
 
     def render(self) -> Text:
+        """Render notification message.
+
+        Returns:
+            Text: Formatted notification text (empty if no waiting agents)
+        """
         if not self.waiting_agents:
             return Text("")
 

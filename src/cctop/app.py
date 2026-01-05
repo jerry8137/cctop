@@ -1,3 +1,5 @@
+"""Main Textual application for CCTOP."""
+
 from pathlib import Path
 import argparse
 from textual.app import App, ComposeResult
@@ -18,7 +20,7 @@ from .models.agent import AgentStatus
 
 
 class CCTopApp(App):
-    """CCTOP - HTOP-like TUI monitor for Claude Code agents"""
+    """CCTOP - HTOP-like TUI monitor for Claude Code agents."""
 
     CSS_PATH = "app.css"
 
@@ -34,6 +36,12 @@ class CCTopApp(App):
     ]
 
     def __init__(self, claude_home: Path = None, refresh_interval: float = 1.0):
+        """Initialize CCTOP application.
+
+        Args:
+            claude_home: Path to Claude home directory (default: ~/.claude)
+            refresh_interval: Refresh interval in seconds (default: 1.0)
+        """
         super().__init__()
         self.aggregator = DataAggregator(claude_home)
         self.watcher = None
@@ -46,6 +54,11 @@ class CCTopApp(App):
         self._disable_watcher = False
 
     def compose(self) -> ComposeResult:
+        """Compose the application UI.
+
+        Returns:
+            ComposeResult: Widget composition
+        """
         yield Header(show_clock=True)
         yield MetricsPanel(id="metrics")
         yield AgentTable(id="agents")
@@ -57,6 +70,7 @@ class CCTopApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
+        """Called when app is mounted. Sets up watchers and starts refresh."""
         self.title = "CCTOP - Claude Code Monitor"
         self.sub_title = "Press '?' for help"
 
@@ -69,11 +83,16 @@ class CCTopApp(App):
         self.refresh_data()
 
     def on_unmount(self) -> None:
+        """Called when app is unmounted. Stops file watcher."""
         if self.watcher:
             self.watcher.stop()
 
     def on_log_file_changed(self, file_path: Path) -> None:
-        """Called when a log file is modified or created"""
+        """Called when a log file is modified or created.
+
+        Args:
+            file_path: Path to the changed log file
+        """
         import time
         current_time = time.time()
 
@@ -84,11 +103,12 @@ class CCTopApp(App):
         self.call_from_thread(self.refresh_data)
 
     def periodic_refresh(self) -> None:
-        """Periodic refresh when file watching is disabled"""
+        """Periodic refresh when file watching is disabled."""
         if self._disable_watcher:
             self.refresh_data()
 
     def refresh_data(self) -> None:
+        """Scan logs, calculate metrics, and update all widgets."""
         metrics = self.aggregator.scan_all_logs()
         agents = self.aggregator.get_all_agents_sorted(self.sort_by)
 
@@ -123,10 +143,12 @@ class CCTopApp(App):
         notification_bar.update_waiting_agents(waiting_agents)
 
     def action_refresh(self) -> None:
+        """Action: Manually refresh all data."""
         self.refresh_data()
         self.notify("Refreshed data")
 
     def action_toggle_sort(self) -> None:
+        """Action: Cycle through sort options."""
         sort_options = ["last_activity", "cost", "tokens", "agent_id"]
         current_index = sort_options.index(self.sort_by)
         next_index = (current_index + 1) % len(sort_options)
@@ -142,6 +164,7 @@ class CCTopApp(App):
         self.refresh_data()
 
     def action_toggle_filter(self) -> None:
+        """Action: Cycle through filter options."""
         filter_options = [None, AgentStatus.ACTIVE, AgentStatus.IDLE, AgentStatus.WAITING_FOR_USER, AgentStatus.STOPPED]
         current_index = filter_options.index(self.filter_status)
         next_index = (current_index + 1) % len(filter_options)
@@ -154,12 +177,14 @@ class CCTopApp(App):
         self.refresh_data()
 
     def action_toggle_cost_panel(self) -> None:
+        """Action: Toggle visibility of bottom panels."""
         panels = self.query_one("#panels")
         self.cost_panel_visible = not self.cost_panel_visible
         panels.display = self.cost_panel_visible
         self.notify(f"Cost panel: {'visible' if self.cost_panel_visible else 'hidden'}")
 
     def action_show_detail(self) -> None:
+        """Action: Show detailed view for selected agent."""
         agent_table = self.query_one("#agents", AgentTable)
         if agent_table.cursor_row < len(agent_table.rows):
             row_key = agent_table.get_row_at(agent_table.cursor_row)[0]
@@ -168,6 +193,7 @@ class CCTopApp(App):
                 self.push_screen(AgentDetail(agent))
 
     def action_show_help(self) -> None:
+        """Action: Display help screen with keyboard shortcuts."""
         help_text = """
 [bold]CCTOP - Keyboard Shortcuts[/bold]
 
@@ -186,10 +212,12 @@ class CCTopApp(App):
         self.notify(help_text.strip(), timeout=10)
 
     def action_quit(self) -> None:
+        """Action: Quit the application."""
         self.exit()
 
 
 def main():
+    """Main entry point for CCTOP application."""
     parser = argparse.ArgumentParser(
         description="CCTOP - HTOP-like TUI monitor for Claude Code agents",
         formatter_class=argparse.RawDescriptionHelpFormatter,

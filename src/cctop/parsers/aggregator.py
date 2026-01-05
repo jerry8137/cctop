@@ -1,3 +1,5 @@
+"""Data aggregator for scanning and aggregating Claude Code agent logs."""
+
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -10,8 +12,14 @@ from .jsonl_parser import JSONLParser
 
 
 class DataAggregator:
+    """Aggregates data from Claude Code agent log files."""
 
     def __init__(self, claude_home: Path = None):
+        """Initialize the data aggregator.
+
+        Args:
+            claude_home: Path to Claude home directory (default: ~/.claude)
+        """
         if claude_home is None:
             claude_home = Path.home() / ".claude"
         self.claude_home = claude_home
@@ -21,6 +29,11 @@ class DataAggregator:
         self.start_time = datetime.now()
 
     def scan_all_logs(self) -> SystemMetrics:
+        """Scan all agent log files and return aggregated metrics.
+
+        Returns:
+            SystemMetrics: Aggregated system metrics for all agents
+        """
         self.agents.clear()
         self.sessions.clear()
 
@@ -37,6 +50,11 @@ class DataAggregator:
         return self._calculate_metrics()
 
     def _scan_project_logs(self, project_dir: Path):
+        """Scan all agent log files in a project directory.
+
+        Args:
+            project_dir: Path to project directory
+        """
         for log_file in project_dir.glob("agent-*.jsonl"):
             agent = self._parse_agent_log(log_file)
             if agent:
@@ -44,6 +62,14 @@ class DataAggregator:
                 self.sessions[agent.session_id] = agent.session_id
 
     def _parse_agent_log(self, log_file: Path) -> Agent | None:
+        """Parse a single agent log file and create an Agent object.
+
+        Args:
+            log_file: Path to agent log file
+
+        Returns:
+            Agent | None: Agent object if parsing successful, None otherwise
+        """
         entries = self.parser.parse_log_file(log_file)
         if not entries:
             return None
@@ -84,6 +110,17 @@ class DataAggregator:
         )
 
     def _determine_agent_status(self, entries: List[Dict], last_activity: datetime, agent_id: str = "", session_id: str = "") -> AgentStatus:
+        """Determine agent status based on activity and message history.
+
+        Args:
+            entries: List of log entries for the agent
+            last_activity: Timestamp of last activity
+            agent_id: Agent identifier
+            session_id: Session identifier
+
+        Returns:
+            AgentStatus: Determined status for the agent
+        """
         from dateutil import tz
 
         now = datetime.now()
@@ -104,7 +141,16 @@ class DataAggregator:
         return AgentStatus.STOPPED
 
     def _check_waiting_for_user(self, entries: List[Dict], agent_id: str, session_id: str) -> bool:
-        """Enhanced check for agents waiting for user input"""
+        """Enhanced check for agents waiting for user input.
+
+        Args:
+            entries: List of log entries for the agent
+            agent_id: Agent identifier
+            session_id: Session identifier
+
+        Returns:
+            bool: True if agent is waiting for user input, False otherwise
+        """
 
         # Check 1: Parse last message in log
         if self.parser.is_waiting_for_user(entries):
@@ -141,6 +187,11 @@ class DataAggregator:
         return False
 
     def _calculate_metrics(self) -> SystemMetrics:
+        """Calculate aggregated system metrics from all agents.
+
+        Returns:
+            SystemMetrics: Aggregated metrics
+        """
         metrics = SystemMetrics()
 
         metrics.total_agents = len(self.agents)
@@ -167,21 +218,44 @@ class DataAggregator:
         return metrics
 
     def _empty_metrics(self) -> SystemMetrics:
+        """Return empty system metrics.
+
+        Returns:
+            SystemMetrics: Empty metrics object
+        """
         return SystemMetrics()
 
     def get_active_agents(self) -> List[Agent]:
+        """Get list of all active agents.
+
+        Returns:
+            List[Agent]: List of active agents
+        """
         return [
             agent for agent in self.agents.values()
             if agent.status == AgentStatus.ACTIVE
         ]
 
     def get_waiting_agents(self) -> List[Agent]:
+        """Get list of all agents waiting for user input.
+
+        Returns:
+            List[Agent]: List of waiting agents
+        """
         return [
             agent for agent in self.agents.values()
             if agent.status == AgentStatus.WAITING_FOR_USER
         ]
 
     def get_all_agents_sorted(self, sort_by: str = "last_activity") -> List[Agent]:
+        """Get sorted list of all agents.
+
+        Args:
+            sort_by: Sort criterion ('last_activity', 'cost', 'tokens', 'agent_id')
+
+        Returns:
+            List[Agent]: Sorted list of agents
+        """
         agents = list(self.agents.values())
 
         if sort_by == "last_activity":
@@ -196,6 +270,11 @@ class DataAggregator:
         return agents
 
     def calculate_total_cost(self) -> Decimal:
+        """Calculate total cost across all agents.
+
+        Returns:
+            Decimal: Total cost in USD
+        """
         total = Decimal("0.00")
         for agent in self.agents.values():
             total += agent.total_cost

@@ -1,3 +1,5 @@
+"""Parser for Claude Code JSONL log files."""
+
 import json
 from datetime import datetime
 from pathlib import Path
@@ -8,9 +10,18 @@ from ..models.usage import TokenUsage
 
 
 class JSONLParser:
+    """Parser for extracting agent data from JSONL log files."""
 
     @staticmethod
     def parse_log_file(file_path: Path) -> List[Dict[str, Any]]:
+        """Parse a JSONL log file and return all entries.
+
+        Args:
+            file_path: Path to the JSONL log file
+
+        Returns:
+            List[Dict[str, Any]]: List of parsed log entries
+        """
         if not file_path.exists():
             return []
 
@@ -33,6 +44,14 @@ class JSONLParser:
 
     @staticmethod
     def extract_usage_data(log_entry: Dict[str, Any]) -> Optional[TokenUsage]:
+        """Extract token usage data from a log entry.
+
+        Args:
+            log_entry: Single JSONL log entry
+
+        Returns:
+            Optional[TokenUsage]: TokenUsage object if usage data found, None otherwise
+        """
         try:
             message = log_entry.get('message', {})
             usage = message.get('usage', {})
@@ -68,6 +87,14 @@ class JSONLParser:
 
     @staticmethod
     def get_agent_info_from_log(entries: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Extract agent metadata and aggregate token usage from log entries.
+
+        Args:
+            entries: List of JSONL log entries for an agent
+
+        Returns:
+            Dict[str, Any]: Dictionary containing agent metadata and aggregated usage
+        """
         if not entries:
             return {}
 
@@ -128,6 +155,14 @@ class JSONLParser:
 
     @staticmethod
     def is_waiting_for_user(entries: List[Dict[str, Any]]) -> bool:
+        """Determine if agent is waiting for user input based on last message.
+
+        Args:
+            entries: List of JSONL log entries for an agent
+
+        Returns:
+            bool: True if agent is waiting for user input, False otherwise
+        """
         if not entries:
             return False
 

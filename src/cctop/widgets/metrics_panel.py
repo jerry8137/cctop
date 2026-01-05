@@ -1,3 +1,5 @@
+"""Top summary metrics panel widget."""
+
 from textual.app import ComposeResult
 from textual.widgets import Static
 from rich.text import Text
@@ -7,16 +9,32 @@ from ..utils.formatting import format_tokens, format_cost
 
 
 class MetricsPanel(Static):
+    """Display top summary bar with agent counts, tokens, and cost."""
 
     def __init__(self, **kwargs):
+        """Initialize metrics panel.
+
+        Args:
+            **kwargs: Additional widget parameters
+        """
         super().__init__(**kwargs)
         self.metrics = SystemMetrics()
 
     def update_metrics(self, metrics: SystemMetrics) -> None:
+        """Update displayed metrics and refresh.
+
+        Args:
+            metrics: Updated system metrics
+        """
         self.metrics = metrics
         self.refresh()
 
     def render(self) -> Text:
+        """Render metrics as formatted text.
+
+        Returns:
+            Text: Formatted metrics text
+        """
         m = self.metrics
 
         parts = [

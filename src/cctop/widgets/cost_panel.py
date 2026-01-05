@@ -1,3 +1,5 @@
+"""Cost breakdown panel widget."""
+
 from textual.app import ComposeResult
 from textual.widgets import Static
 from textual.containers import Container
@@ -10,17 +12,32 @@ from ..utils.pricing import calculate_cost
 
 
 class CostPanel(Static):
-    """Display detailed cost breakdown"""
+    """Display detailed cost breakdown."""
 
     def __init__(self, **kwargs):
+        """Initialize cost panel.
+
+        Args:
+            **kwargs: Additional widget parameters
+        """
         super().__init__(**kwargs)
         self.metrics = SystemMetrics()
 
     def update_metrics(self, metrics: SystemMetrics) -> None:
+        """Update cost metrics and refresh display.
+
+        Args:
+            metrics: Updated system metrics
+        """
         self.metrics = metrics
         self.refresh()
 
     def render(self) -> Text:
+        """Render cost breakdown.
+
+        Returns:
+            Text: Formatted cost breakdown
+        """
         m = self.metrics
 
         input_cost = calculate_cost(

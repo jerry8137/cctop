@@ -1,3 +1,5 @@
+"""Agent data table widget for displaying agent list."""
+
 from textual.app import ComposeResult
 from textual.widgets import DataTable
 from textual.coordinate import Coordinate
@@ -9,14 +11,21 @@ from ..utils.formatting import format_tokens, format_cost, format_time_ago
 
 
 class AgentTable(DataTable):
+    """Display agents in a sortable data table."""
 
     def __init__(self, **kwargs):
+        """Initialize agent table.
+
+        Args:
+            **kwargs: Additional widget parameters
+        """
         super().__init__(**kwargs)
         self.cursor_type = "row"
         self.zebra_stripes = True
         self._setup_columns()
 
     def _setup_columns(self) -> None:
+        """Setup table columns with headers and widths."""
         self.add_column("ID", key="id", width=8)
         self.add_column("Name", key="name", width=20)
         self.add_column("Status", key="status", width=10)
@@ -27,6 +36,11 @@ class AgentTable(DataTable):
         self.add_column("Last Active", key="last_active", width=12)
 
     def update_agents(self, agents: List[Agent]) -> None:
+        """Update table with agent data.
+
+        Args:
+            agents: List of agents to display
+        """
         self.clear()
 
         for agent in agents:
@@ -45,6 +59,14 @@ class AgentTable(DataTable):
             )
 
     def _format_status(self, status: AgentStatus) -> Text:
+        """Format agent status with color coding.
+
+        Args:
+            status: Agent status enum
+
+        Returns:
+            Text: Colored status text
+        """
         if status == AgentStatus.ACTIVE:
             return Text("ACTIVE", style="bold green")
         elif status == AgentStatus.WAITING_FOR_USER:

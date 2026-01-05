@@ -1,3 +1,5 @@
+"""Pricing utilities for calculating Claude API costs."""
+
 from decimal import Decimal
 
 PRICING = {
@@ -48,6 +50,14 @@ DEFAULT_PRICING = {
 
 
 def normalize_model_name(model: str) -> str:
+    """Normalize model names to standard pricing keys.
+
+    Args:
+        model: Raw model identifier from API
+
+    Returns:
+        str: Normalized model name for pricing lookup
+    """
     model_lower = model.lower()
 
     if "opus-4" in model_lower or "opus-4-5" in model_lower:
@@ -67,6 +77,14 @@ def normalize_model_name(model: str) -> str:
 
 
 def get_pricing(model: str) -> dict:
+    """Get pricing information for a specific model.
+
+    Args:
+        model: Model identifier
+
+    Returns:
+        dict: Pricing dictionary with rates for input, output, cache_creation, cache_read
+    """
     normalized = normalize_model_name(model)
     return PRICING.get(normalized, DEFAULT_PRICING)
 
@@ -78,6 +96,18 @@ def calculate_cost(
     cache_creation_tokens: int = 0,
     cache_read_tokens: int = 0,
 ) -> Decimal:
+    """Calculate total cost based on token usage.
+
+    Args:
+        model: Model identifier
+        input_tokens: Number of input tokens
+        output_tokens: Number of output tokens
+        cache_creation_tokens: Number of cache creation tokens (default: 0)
+        cache_read_tokens: Number of cache read tokens (default: 0)
+
+    Returns:
+        Decimal: Total cost in USD
+    """
     pricing = get_pricing(model)
 
     input_cost = Decimal(input_tokens) * pricing["input"]

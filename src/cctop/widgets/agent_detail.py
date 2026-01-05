@@ -1,3 +1,5 @@
+"""Agent detail modal screen widget."""
+
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
 from textual.widgets import Static, Button
@@ -9,7 +11,7 @@ from ..utils.formatting import format_tokens, format_cost, format_time_ago, form
 
 
 class AgentDetail(ModalScreen):
-    """Modal screen showing detailed information about an agent"""
+    """Modal screen showing detailed information about an agent."""
 
     CSS = """
     AgentDetail {
@@ -43,16 +45,31 @@ class AgentDetail(ModalScreen):
     """
 
     def __init__(self, agent: Agent):
+        """Initialize agent detail screen.
+
+        Args:
+            agent: Agent to display details for
+        """
         super().__init__()
         self.agent = agent
 
     def compose(self) -> ComposeResult:
+        """Compose the modal dialog.
+
+        Returns:
+            ComposeResult: Widget composition
+        """
         with Container(id="dialog"):
             yield Static(f"Agent Details: {self.agent.slug}", id="title")
             yield Static(self._format_details(), id="content")
             yield Button("Close (ESC)", variant="primary", id="close-btn")
 
     def _format_details(self) -> Text:
+        """Format agent details as rich text.
+
+        Returns:
+            Text: Formatted agent details
+        """
         a = self.agent
 
         lines = [
@@ -81,8 +98,18 @@ class AgentDetail(ModalScreen):
         return Text("\n").join(lines)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle close button press.
+
+        Args:
+            event: Button pressed event
+        """
         self.dismiss()
 
     def on_key(self, event) -> None:
+        """Handle keyboard input.
+
+        Args:
+            event: Key event
+        """
         if event.key == "escape":
             self.dismiss()

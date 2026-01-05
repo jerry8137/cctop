@@ -1,15 +1,25 @@
+"""Log tailer for efficiently reading only new lines from files."""
+
 from pathlib import Path
 from typing import List, Dict
 
 
 class LogTailer:
-    """Efficiently read only new lines from log files (tail-like behavior)"""
+    """Efficiently read only new lines from log files (tail-like behavior)."""
 
     def __init__(self):
+        """Initialize log tailer with empty position tracking."""
         self.file_positions: Dict[str, tuple[int, int]] = {}
 
     def get_new_lines(self, file_path: Path) -> List[str]:
-        """Get only new lines since last read"""
+        """Get only new lines since last read.
+
+        Args:
+            file_path: Path to log file
+
+        Returns:
+            List[str]: New lines added since last read
+        """
         if not file_path.exists():
             return []
 
@@ -45,7 +55,11 @@ class LogTailer:
             return []
 
     def reset(self, file_path: Path = None):
-        """Reset position tracking for a file or all files"""
+        """Reset position tracking for a file or all files.
+
+        Args:
+            file_path: Optional path to specific file. If None, resets all files.
+        """
         if file_path:
             file_key = str(file_path)
             if file_key in self.file_positions:
