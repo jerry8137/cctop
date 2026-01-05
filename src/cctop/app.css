@@ -1,0 +1,76 @@
+Screen {
+    background: $surface;
+}
+
+#header {
+    dock: top;
+    height: 1;
+    background: $primary;
+    color: $text;
+    content-align: center middle;
+}
+
+#metrics {
+    dock: top;
+    height: 1;
+    background: $panel;
+    padding: 0 1;
+}
+
+#agents {
+    height: 1fr;
+    margin: 1 0;
+}
+
+#notification {
+    dock: top;
+    height: auto;
+    min-height: 0;
+    max-height: 1;
+    padding: 0 1;
+}
+
+#panels {
+    dock: bottom;
+    height: 15;
+    background: $panel;
+    margin: 0 0 1 0;
+}
+
+#cost {
+    width: 1fr;
+    padding: 1 2;
+    border: solid $primary;
+}
+
+#system {
+    width: 1fr;
+    padding: 1 2;
+    border: solid $primary;
+}
+
+#usage {
+    width: 1fr;
+    padding: 1 2;
+    border: solid $primary;
+}
+
+#footer {
+    dock: bottom;
+    height: 1;
+    background: $panel;
+}
+
+DataTable {
+    height: 100%;
+}
+
+DataTable > .datatable--header {
+    background: $primary;
+    color: $text;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: $primary 30%;
+}
