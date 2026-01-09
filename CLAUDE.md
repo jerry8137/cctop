@@ -73,13 +73,41 @@ Textual widgets render in TUI
 
 ### Pricing System
 
-Token costs are calculated in `utils/pricing.py` using hardcoded rates for all Claude models (Opus 4.5, Sonnet 4.5, Haiku 3.5, etc.). Each agent's total cost is computed from four token types:
+Token costs are calculated using a **dynamic three-tier pricing system**:
+
+**1. Fetch from LiteLLM** (`utils/pricing_fetcher.py`):
+- Fetches latest pricing from `https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json`
+- Converts scientific notation (3e-06) to Decimal for precision
+- Normalizes model names (handles anthropic. prefix, -v suffixes)
+- Saves to cache after successful fetch
+
+**2. Local Cache** (`utils/pricing_cache.py`):
+- Cached at `~/.cache/cctop/pricing.json`
+- 24-hour TTL (time-to-live)
+- Atomic write pattern for thread safety
+- Fallback when network unavailable
+
+**3. Bundled Pricing** (`utils/bundled_pricing.json`):
+- Packaged with application as final fallback
+- Used in offline mode (`--offline` flag)
+- Contains correct Opus 4.5 pricing ($5/$25 per million tokens)
+
+**Initialization Flow**:
+```
+app.on_mount() → pricing.initialize_pricing(offline_mode)
+    ↓ (if not offline) Try fetch from LiteLLM
+    ↓ (if fetch fails) Try load from cache
+    ↓ (if cache invalid) Load bundled pricing
+    → Returns source: "fetched" | "cached" | "bundled"
+```
+
+Each agent's total cost is computed from four token types:
 - Input tokens
 - Output tokens
 - Cache creation tokens
 - Cache read tokens
 
-Model names are normalized (e.g., "claude-sonnet-4-5-20250929" → "claude-sonnet-4-5") before lookup.
+Model names are normalized (e.g., "claude-sonnet-4-5-20250929" → "claude-sonnet-4-5", "anthropic.claude-3-5-sonnet-20241022-v2:0" → "claude-3-5-sonnet") before lookup.
 
 ### Widget Architecture
 

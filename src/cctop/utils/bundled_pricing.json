@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "description": "Bundled fallback pricing for offline use",
+  "last_updated": "2026-01-08",
+  "source": "Anthropic official pricing + LiteLLM database",
+  "pricing": {
+    "claude-sonnet-4-5": {
+      "input": "0.000003",
+      "output": "0.000015",
+      "cache_creation": "0.00000375",
+      "cache_read": "0.0000003"
+    },
+    "claude-opus-4-5": {
+      "input": "0.000005",
+      "output": "0.000025",
+      "cache_creation": "0.00000625",
+      "cache_read": "0.0000005"
+    },
+    "claude-3-5-sonnet": {
+      "input": "0.000003",
+      "output": "0.000015",
+      "cache_creation": "0.00000375",
+      "cache_read": "0.0000003"
+    },
+    "claude-3-opus": {
+      "input": "0.000015",
+      "output": "0.000075",
+      "cache_creation": "0.00001875",
+      "cache_read": "0.0000015"
+    },
+    "claude-3-5-haiku": {
+      "input": "0.0000008",
+      "output": "0.000004",
+      "cache_creation": "0.000001",
+      "cache_read": "0.00000008"
+    },
+    "claude-3-haiku": {
+      "input": "0.00000025",
+      "output": "0.00000125",
+      "cache_creation": "0.0000003",
+      "cache_read": "0.00000003"
+    }
+  }
+}
