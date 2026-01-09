@@ -58,9 +58,9 @@ def _load_bundled_pricing() -> dict:
     """
     try:
         bundled_file = Path(__file__).parent / "bundled_pricing.json"
-        with open(bundled_file, 'r') as f:
+        with open(bundled_file, "r") as f:
             data = json.load(f)
-            return _convert_json_to_pricing(data['pricing'])
+            return _convert_json_to_pricing(data["pricing"])
     except (OSError, IOError, json.JSONDecodeError, KeyError) as e:
         logger.error(f"Failed to load bundled pricing: {e}")
         return {}
@@ -191,7 +191,12 @@ def calculate_cost(
     """
     pricing = get_pricing(model)
 
-    input_cost = Decimal(input_tokens) * pricing["input"]
+    # Input tokens in API response include cache tokens, so we need to subtract them
+    # to avoid double counting
+    adjusted_input_tokens = max(
+        0, input_tokens - cache_creation_tokens - cache_read_tokens
+    )
+    input_cost = Decimal(adjusted_input_tokens) * pricing["input"]
     output_cost = Decimal(output_tokens) * pricing["output"]
     cache_creation_cost = Decimal(cache_creation_tokens) * pricing["cache_creation"]
     cache_read_cost = Decimal(cache_read_tokens) * pricing["cache_read"]

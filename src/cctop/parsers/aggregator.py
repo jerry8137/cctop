@@ -75,41 +75,47 @@ class DataAggregator:
             return None
 
         agent_info = self.parser.get_agent_info_from_log(entries)
-        if not agent_info.get('agent_id'):
+        if not agent_info.get("agent_id"):
             return None
 
         status = self._determine_agent_status(
             entries,
-            agent_info['last_activity'],
-            agent_info.get('agent_id', ''),
-            agent_info.get('session_id', '')
+            agent_info["last_activity"],
+            agent_info.get("agent_id", ""),
+            agent_info.get("session_id", ""),
         )
 
-        current_cwd = agent_info.get('project_path', '')
+        current_cwd = agent_info.get("project_path", "")
         if entries:
             for entry in reversed(entries):
-                if entry.get('cwd'):
-                    current_cwd = entry['cwd']
+                if entry.get("cwd"):
+                    current_cwd = entry["cwd"]
                     break
 
         return Agent(
-            agent_id=agent_info['agent_id'],
-            slug=agent_info['slug'] or agent_info['agent_id'][:7],
-            session_id=agent_info['session_id'],
+            agent_id=agent_info["agent_id"],
+            slug=agent_info["slug"] or agent_info["agent_id"][:7],
+            session_id=agent_info["session_id"],
             status=status,
             project_path=str(log_file.parent),
             current_cwd=current_cwd,
-            created_at=agent_info['created_at'],
-            last_activity=agent_info['last_activity'],
-            total_input_tokens=agent_info['total_input_tokens'],
-            total_output_tokens=agent_info['total_output_tokens'],
-            total_cache_creation_tokens=agent_info['total_cache_creation_tokens'],
-            total_cache_read_tokens=agent_info['total_cache_read_tokens'],
-            message_count=agent_info['message_count'],
-            model=agent_info['model'],
+            created_at=agent_info["created_at"],
+            last_activity=agent_info["last_activity"],
+            total_input_tokens=agent_info["total_input_tokens"],
+            total_output_tokens=agent_info["total_output_tokens"],
+            total_cache_creation_tokens=agent_info["total_cache_creation_tokens"],
+            total_cache_read_tokens=agent_info["total_cache_read_tokens"],
+            message_count=agent_info["message_count"],
+            model=agent_info["model"],
         )
 
-    def _determine_agent_status(self, entries: List[Dict], last_activity: datetime, agent_id: str = "", session_id: str = "") -> AgentStatus:
+    def _determine_agent_status(
+        self,
+        entries: List[Dict],
+        last_activity: datetime,
+        agent_id: str = "",
+        session_id: str = "",
+    ) -> AgentStatus:
         """Determine agent status based on activity and message history.
 
         Args:
@@ -135,12 +141,16 @@ class DataAggregator:
         if time_since_activity < timedelta(seconds=30):
             return AgentStatus.ACTIVE
 
-        if time_since_activity < timedelta(hours=1):
+        # shorter timeout for IDLE state (was 1 hour)
+        # If not waiting for user and inactive for > 10 mins, assume stopped/killed
+        if time_since_activity < timedelta(minutes=10):
             return AgentStatus.IDLE
 
         return AgentStatus.STOPPED
 
-    def _check_waiting_for_user(self, entries: List[Dict], agent_id: str, session_id: str) -> bool:
+    def _check_waiting_for_user(
+        self, entries: List[Dict], agent_id: str, session_id: str
+    ) -> bool:
         """Enhanced check for agents waiting for user input.
 
         Args:
@@ -167,14 +177,16 @@ class DataAggregator:
                 if todo_file.exists():
                     try:
                         import json
+
                         todos = json.loads(todo_file.read_text())
                         # Empty todo list might indicate waiting
                         if isinstance(todos, list) and len(todos) == 0:
                             # But only if there's recent activity
                             if entries:
-                                last_timestamp = entries[-1].get('timestamp', '')
+                                last_timestamp = entries[-1].get("timestamp", "")
                                 if last_timestamp:
                                     from dateutil import parser as date_parser, tz
+
                                     last_time = date_parser.isoparse(last_timestamp)
                                     now = datetime.now()
                                     if last_time.tzinfo:
@@ -232,7 +244,8 @@ class DataAggregator:
             List[Agent]: List of active agents
         """
         return [
-            agent for agent in self.agents.values()
+            agent
+            for agent in self.agents.values()
             if agent.status == AgentStatus.ACTIVE
         ]
 
@@ -243,7 +256,8 @@ class DataAggregator:
             List[Agent]: List of waiting agents
         """
         return [
-            agent for agent in self.agents.values()
+            agent
+            for agent in self.agents.values()
             if agent.status == AgentStatus.WAITING_FOR_USER
         ]
 
@@ -263,7 +277,9 @@ class DataAggregator:
         elif sort_by == "cost":
             agents.sort(key=lambda a: a.total_cost, reverse=True)
         elif sort_by == "tokens":
-            agents.sort(key=lambda a: a.total_input_tokens + a.total_output_tokens, reverse=True)
+            agents.sort(
+                key=lambda a: a.total_input_tokens + a.total_output_tokens, reverse=True
+            )
         elif sort_by == "agent_id":
             agents.sort(key=lambda a: a.agent_id)
 
@@ -342,7 +358,11 @@ class DataAggregator:
                         total_tokens = usage_data.total_tokens
 
                         # Session tracking
-                        session_start_utc = session_start.replace(tzinfo=timezone.utc) if session_start.tzinfo is None else session_start.astimezone(timezone.utc)
+                        session_start_utc = (
+                            session_start.replace(tzinfo=timezone.utc)
+                            if session_start.tzinfo is None
+                            else session_start.astimezone(timezone.utc)
+                        )
                         if entry_time >= session_start_utc:
                             metrics.session_total_tokens += total_tokens
                             metrics.session_request_count += 1

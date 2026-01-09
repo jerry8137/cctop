@@ -13,6 +13,7 @@ class AgentStatus(str, Enum):
         WAITING_FOR_USER: Agent is waiting for user input
         STOPPED: Agent is stopped (no activity for over 1 hour)
     """
+
     ACTIVE = "active"
     IDLE = "idle"
     WAITING_FOR_USER = "waiting_for_user"
@@ -40,6 +41,7 @@ class Agent:
         model: Claude model identifier (e.g., claude-sonnet-4-5)
         is_sidechain: Whether this is a sidechain agent
     """
+
     agent_id: str
     slug: str
     session_id: str
@@ -64,6 +66,7 @@ class Agent:
             Decimal: Total cost in USD
         """
         from ..utils.pricing import calculate_cost
+
         return calculate_cost(
             model=self.model,
             input_tokens=self.total_input_tokens,

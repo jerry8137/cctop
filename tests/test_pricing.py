@@ -22,26 +22,33 @@ def test_normalize_model_name():
 
 def test_normalize_model_name_with_prefixes():
     """Test normalization with provider prefixes and version suffixes."""
-    assert normalize_model_name("anthropic.claude-3-5-sonnet-20241022-v2:0") == "claude-3-5-sonnet"
+    assert (
+        normalize_model_name("anthropic.claude-3-5-sonnet-20241022-v2:0")
+        == "claude-3-5-sonnet"
+    )
     assert normalize_model_name("bedrock/claude-opus-4-5-20251101") == "claude-opus-4-5"
-    assert normalize_model_name("claude-sonnet-4-5-20250929-v1:0") == "claude-sonnet-4-5"
+    assert (
+        normalize_model_name("claude-sonnet-4-5-20250929-v1:0") == "claude-sonnet-4-5"
+    )
 
 
-def test_get_pricing():
+@patch("src.cctop.utils.pricing.pricing_cache.load_from_cache", return_value=None)
+def test_get_pricing(mock_load_cache):
     # Initialize pricing first (uses bundled file)
     initialize_pricing(offline_mode=True)
 
     pricing = get_pricing("claude-sonnet-4-5-20250929")
-    assert pricing['input'] == Decimal("0.000003")
-    assert pricing['output'] == Decimal("0.000015")
+    assert pricing["input"] == Decimal("0.000003")
+    assert pricing["output"] == Decimal("0.000015")
 
     # Fixed: Opus 4.5 pricing should be $5/$25, not $15/$75
     pricing_opus = get_pricing("claude-opus-4-5-20251101")
-    assert pricing_opus['input'] == Decimal("0.000005")
-    assert pricing_opus['output'] == Decimal("0.000025")
+    assert pricing_opus["input"] == Decimal("0.000005")
+    assert pricing_opus["output"] == Decimal("0.000025")
 
 
-def test_calculate_cost():
+@patch("src.cctop.utils.pricing.pricing_cache.load_from_cache", return_value=None)
+def test_calculate_cost(mock_load_cache):
     # Initialize pricing first
     initialize_pricing(offline_mode=True)
 
@@ -54,16 +61,17 @@ def test_calculate_cost():
     )
 
     expected = (
-        Decimal(100) * Decimal("0.000003") +
-        Decimal(50) * Decimal("0.000015") +
-        Decimal(10) * Decimal("0.00000375") +
-        Decimal(5) * Decimal("0.0000003")
+        Decimal(85) * Decimal("0.000003")
+        + Decimal(50) * Decimal("0.000015")
+        + Decimal(10) * Decimal("0.00000375")
+        + Decimal(5) * Decimal("0.0000003")
     )
 
     assert cost == expected.quantize(Decimal("0.000001"))
 
 
-def test_calculate_cost_no_cache():
+@patch("src.cctop.utils.pricing.pricing_cache.load_from_cache", return_value=None)
+def test_calculate_cost_no_cache(mock_load_cache):
     # Initialize pricing first
     initialize_pricing(offline_mode=True)
 
@@ -73,30 +81,30 @@ def test_calculate_cost_no_cache():
         output_tokens=500,
     )
 
-    expected = (
-        Decimal(1000) * Decimal("0.000003") +
-        Decimal(500) * Decimal("0.000015")
-    )
+    expected = Decimal(1000) * Decimal("0.000003") + Decimal(500) * Decimal("0.000015")
 
     assert cost == expected.quantize(Decimal("0.000001"))
 
 
-def test_opus_pricing_fixed():
+@patch("src.cctop.utils.pricing.pricing_cache.load_from_cache", return_value=None)
+def test_opus_pricing_fixed(mock_load_cache):
     """Test that Opus 4.5 pricing is corrected to $5/$25 (not $15/$75)."""
     # Initialize with bundled pricing
     initialize_pricing(offline_mode=True)
 
     pricing_opus = get_pricing("claude-opus-4-5")
-    assert pricing_opus['input'] == Decimal("0.000005")
-    assert pricing_opus['output'] == Decimal("0.000025")
-    assert pricing_opus['cache_creation'] == Decimal("0.00000625")
-    assert pricing_opus['cache_read'] == Decimal("0.0000005")
+    assert pricing_opus["input"] == Decimal("0.000005")
+    assert pricing_opus["output"] == Decimal("0.000025")
+    assert pricing_opus["cache_creation"] == Decimal("0.00000625")
+    assert pricing_opus["cache_read"] == Decimal("0.0000005")
 
 
-def test_initialize_pricing_offline_mode():
+@patch("src.cctop.utils.pricing.pricing_cache.load_from_cache", return_value=None)
+def test_initialize_pricing_offline_mode(mock_load_cache):
     """Test that offline mode uses bundled pricing."""
     # Reset module state
     import src.cctop.utils.pricing as pricing_module
+
     pricing_module._PRICING_INITIALIZED = False
     pricing_module.PRICING = {}
 
@@ -108,12 +116,13 @@ def test_initialize_pricing_offline_mode():
     assert "claude-opus-4-5" in PRICING
 
 
-@patch('src.cctop.utils.pricing.pricing_fetcher.fetch_litellm_pricing')
-@patch('src.cctop.utils.pricing.pricing_cache.save_to_cache')
+@patch("src.cctop.utils.pricing.pricing_fetcher.fetch_litellm_pricing")
+@patch("src.cctop.utils.pricing.pricing_cache.save_to_cache")
 def test_initialize_pricing_fetch_success(mock_save, mock_fetch):
     """Test successful fetch from LiteLLM."""
     # Reset module state
     import src.cctop.utils.pricing as pricing_module
+
     pricing_module._PRICING_INITIALIZED = False
     pricing_module.PRICING = {}
 
@@ -135,12 +144,13 @@ def test_initialize_pricing_fetch_success(mock_save, mock_fetch):
     assert "claude-sonnet-4-5" in PRICING
 
 
-@patch('src.cctop.utils.pricing.pricing_fetcher.fetch_litellm_pricing')
-@patch('src.cctop.utils.pricing.pricing_cache.load_from_cache')
+@patch("src.cctop.utils.pricing.pricing_fetcher.fetch_litellm_pricing")
+@patch("src.cctop.utils.pricing.pricing_cache.load_from_cache")
 def test_initialize_pricing_fallback_to_cache(mock_load_cache, mock_fetch):
     """Test fallback to cache when fetch fails."""
     # Reset module state
     import src.cctop.utils.pricing as pricing_module
+
     pricing_module._PRICING_INITIALIZED = False
     pricing_module.PRICING = {}
 
