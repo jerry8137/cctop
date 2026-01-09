@@ -35,12 +35,13 @@ class CCTopApp(App):
         ("ctrl+c", "quit", "Quit"),
     ]
 
-    def __init__(self, claude_home: Path = None, refresh_interval: float = 1.0):
+    def __init__(self, claude_home: Path = None, refresh_interval: float = 1.0, offline_mode: bool = False):
         """Initialize CCTOP application.
 
         Args:
             claude_home: Path to Claude home directory (default: ~/.claude)
             refresh_interval: Refresh interval in seconds (default: 1.0)
+            offline_mode: Disable network operations (default: False)
         """
         super().__init__()
         self.aggregator = DataAggregator(claude_home)
@@ -52,6 +53,8 @@ class CCTopApp(App):
         self.cost_panel_visible = True
         self._claude_home = claude_home or Path.home() / ".claude"
         self._disable_watcher = False
+        self._offline_mode = offline_mode
+        self._pricing_source = "unknown"
 
     def compose(self) -> ComposeResult:
         """Compose the application UI.
@@ -70,9 +73,20 @@ class CCTopApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
-        """Called when app is mounted. Sets up watchers and starts refresh."""
+        """Called when app is mounted. Initialize pricing and start watchers."""
         self.title = "CCTOP - Claude Code Monitor"
-        self.sub_title = "Press '?' for help"
+
+        # Initialize pricing system
+        from .utils.pricing import initialize_pricing
+        self._pricing_source = initialize_pricing(offline_mode=self._offline_mode)
+
+        # Update subtitle with pricing source indicator
+        if self._pricing_source == "fetched":
+            self.sub_title = "Press '?' for help | Pricing: updated"
+        elif self._pricing_source == "cached":
+            self.sub_title = "Press '?' for help | Pricing: cached"
+        else:  # bundled
+            self.sub_title = "Press '?' for help | Pricing: bundled"
 
         if not self._disable_watcher:
             self.watcher = LogFileWatcher(self._claude_home, self.on_log_file_changed)
@@ -261,16 +275,23 @@ Keyboard shortcuts:
     )
 
     parser.add_argument(
+        "--offline",
+        action="store_true",
+        help="Disable network operations (use cached/bundled pricing)"
+    )
+
+    parser.add_argument(
         "--version",
         action="version",
-        version="cctop 0.1.0"
+        version="cctop 0.2.0"
     )
 
     args = parser.parse_args()
 
     app = CCTopApp(
         claude_home=args.log_dir,
-        refresh_interval=args.refresh
+        refresh_interval=args.refresh,
+        offline_mode=args.offline
     )
 
     # Disable file watcher if requested

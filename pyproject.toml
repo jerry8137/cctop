@@ -1,6 +1,6 @@
 [project]
 name = "cctop"
-version = "0.1.0"
+version = "0.2.0"
 description = "HTOP-like TUI monitor for Claude Code agents"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -27,3 +27,14 @@ cctop = "cctop.app:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatchling.build.targets.wheel]
+packages = ["src/cctop"]
+
+[tool.hatchling.build.targets.wheel.force-include]
+"src/cctop/utils/bundled_pricing.json" = "cctop/utils/bundled_pricing.json"
+
+[dependency-groups]
+dev = [
+    "python-lsp-server[all]>=1.14.0",
+]

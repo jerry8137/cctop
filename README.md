@@ -6,12 +6,14 @@ HTOP-like TUI monitor for Claude Code agents. Monitor resource usage, account co
 
 - **Real-time Monitoring**: Watch Claude Code agents as they run
 - **Token Usage Tracking**: See input/output tokens and cache usage per agent
+- **Dynamic Pricing**: Automatically fetches latest pricing from LiteLLM with local caching
 - **Cost Calculation**: Accurate pricing for all Claude models (Opus 4.5, Sonnet 4.5, Haiku 3.5, etc.)
 - **Agent Status**: Track active, idle, waiting, and stopped agents
 - **File Watching**: Automatically updates when log files change
 - **Live Updates**: Instant refresh when agents start, stop, or make API calls
 - **Sorting & Filtering**: Sort by cost, tokens, or activity; filter by agent status
 - **Agent Details**: View detailed information for any agent
+- **Offline Mode**: Works completely offline with bundled pricing
 - **Customizable**: CLI arguments for refresh rate, log directory, and more
 
 ## Installation
@@ -37,8 +39,24 @@ uv run python main.py
 cctop --refresh 0.5                # Faster refresh (500ms)
 cctop --log-dir /custom/path       # Custom log directory
 cctop --no-watch                   # Disable file watching
+cctop --offline                    # Offline mode (use cached/bundled pricing)
 cctop --help                       # Show all options
 ```
+
+### Pricing
+
+CCTOP uses a three-tier pricing system:
+
+1. **Fetch from LiteLLM** (default): Automatically fetches latest pricing on first run
+2. **Local Cache**: Caches pricing for 24 hours in `~/.cache/cctop/pricing.json`
+3. **Bundled Fallback**: Uses bundled pricing when offline or if fetch fails
+
+The subtitle shows the pricing source:
+- `Pricing: updated` - Fetched from LiteLLM recently
+- `Pricing: cached` - Using cached pricing
+- `Pricing: bundled` - Using bundled fallback (offline mode)
+
+Use `--offline` to skip network operations and use only cached/bundled pricing.
 
 ### Keyboard Shortcuts
 
