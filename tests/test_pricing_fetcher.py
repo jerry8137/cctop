@@ -19,7 +19,7 @@ from src.cctop.utils.pricing_fetcher import (
 def sample_litellm_data():
     """Load sample LiteLLM API response."""
     fixture_path = Path(__file__).parent / "fixtures" / "litellm_sample.json"
-    with open(fixture_path, 'r') as f:
+    with open(fixture_path, "r") as f:
         return json.load(f)
 
 
@@ -33,11 +33,21 @@ def test_convert_scientific_to_decimal():
 
 def test_normalize_litellm_model_name():
     """Test normalizing LiteLLM model names."""
-    assert _normalize_litellm_model_name("claude-sonnet-4-5-20250929") == "claude-sonnet-4-5"
-    assert _normalize_litellm_model_name("claude-opus-4-5-20251101") == "claude-opus-4-5"
-    assert _normalize_litellm_model_name("anthropic.claude-3-5-sonnet-20241022-v2:0") == "claude-3-5-sonnet"
+    assert (
+        _normalize_litellm_model_name("claude-sonnet-4-5-20250929")
+        == "claude-sonnet-4-5"
+    )
+    assert (
+        _normalize_litellm_model_name("claude-opus-4-5-20251101") == "claude-opus-4-5"
+    )
+    assert (
+        _normalize_litellm_model_name("anthropic.claude-3-5-sonnet-20241022-v2:0")
+        == "claude-3-5-sonnet"
+    )
     assert _normalize_litellm_model_name("claude-3-opus-20240229") == "claude-3-opus"
-    assert _normalize_litellm_model_name("claude-3-5-haiku-20241022") == "claude-3-5-haiku"
+    assert (
+        _normalize_litellm_model_name("claude-3-5-haiku-20241022") == "claude-3-5-haiku"
+    )
     assert _normalize_litellm_model_name("claude-3-haiku-20240307") == "claude-3-haiku"
 
 
@@ -79,7 +89,7 @@ def test_convert_litellm_to_internal_missing_pricing():
             "input_cost_per_token": 3e-06,
             # Missing output_cost_per_token
             "cache_creation_input_token_cost": 3.75e-06,
-            "cache_read_input_token_cost": 3e-07
+            "cache_read_input_token_cost": 3e-07,
         }
     }
 
@@ -93,7 +103,7 @@ def test_convert_litellm_to_internal_missing_cache_pricing():
     data = {
         "claude-sonnet-4-5-20250929": {
             "input_cost_per_token": 3e-06,
-            "output_cost_per_token": 1.5e-05
+            "output_cost_per_token": 1.5e-05,
             # Missing cache pricing
         }
     }
@@ -104,13 +114,13 @@ def test_convert_litellm_to_internal_missing_cache_pricing():
     assert result["claude-sonnet-4-5"]["cache_read"] == Decimal("0")
 
 
-@patch('urllib.request.urlopen')
+@patch("urllib.request.urlopen")
 def test_fetch_litellm_pricing_success(mock_urlopen, sample_litellm_data):
     """Test successful pricing fetch from LiteLLM."""
     # Mock HTTP response
     mock_response = MagicMock()
     mock_response.status = 200
-    mock_response.read.return_value = json.dumps(sample_litellm_data).encode('utf-8')
+    mock_response.read.return_value = json.dumps(sample_litellm_data).encode("utf-8")
     mock_response.__enter__.return_value = mock_response
     mock_response.__exit__.return_value = None
     mock_urlopen.return_value = mock_response
@@ -124,22 +134,18 @@ def test_fetch_litellm_pricing_success(mock_urlopen, sample_litellm_data):
     assert result["claude-opus-4-5"]["input"] == Decimal("0.000005")
 
 
-@patch('urllib.request.urlopen')
+@patch("urllib.request.urlopen")
 def test_fetch_litellm_pricing_http_error(mock_urlopen):
     """Test handling HTTP errors."""
     mock_urlopen.side_effect = urllib.error.HTTPError(
-        url="http://test.com",
-        code=500,
-        msg="Internal Server Error",
-        hdrs={},
-        fp=None
+        url="http://test.com", code=500, msg="Internal Server Error", hdrs={}, fp=None
     )
 
     result = fetch_litellm_pricing()
     assert result is None
 
 
-@patch('urllib.request.urlopen')
+@patch("urllib.request.urlopen")
 def test_fetch_litellm_pricing_url_error(mock_urlopen):
     """Test handling network errors."""
     mock_urlopen.side_effect = urllib.error.URLError("Network unreachable")
@@ -148,17 +154,18 @@ def test_fetch_litellm_pricing_url_error(mock_urlopen):
     assert result is None
 
 
-@patch('urllib.request.urlopen')
+@patch("urllib.request.urlopen")
 def test_fetch_litellm_pricing_timeout(mock_urlopen):
     """Test handling timeout errors."""
     import socket
+
     mock_urlopen.side_effect = socket.timeout("Connection timed out")
 
     result = fetch_litellm_pricing()
     assert result is None
 
 
-@patch('urllib.request.urlopen')
+@patch("urllib.request.urlopen")
 def test_fetch_litellm_pricing_invalid_json(mock_urlopen):
     """Test handling invalid JSON response."""
     mock_response = MagicMock()
@@ -172,12 +179,12 @@ def test_fetch_litellm_pricing_invalid_json(mock_urlopen):
     assert result is None
 
 
-@patch('urllib.request.urlopen')
+@patch("urllib.request.urlopen")
 def test_fetch_litellm_pricing_empty_response(mock_urlopen):
     """Test handling empty JSON response."""
     mock_response = MagicMock()
     mock_response.status = 200
-    mock_response.read.return_value = json.dumps({}).encode('utf-8')
+    mock_response.read.return_value = json.dumps({}).encode("utf-8")
     mock_response.__enter__.return_value = mock_response
     mock_response.__exit__.return_value = None
     mock_urlopen.return_value = mock_response
@@ -187,7 +194,7 @@ def test_fetch_litellm_pricing_empty_response(mock_urlopen):
     assert result is None
 
 
-@patch('urllib.request.urlopen')
+@patch("urllib.request.urlopen")
 def test_fetch_litellm_pricing_non_200_status(mock_urlopen):
     """Test handling non-200 HTTP status."""
     mock_response = MagicMock()
@@ -200,12 +207,12 @@ def test_fetch_litellm_pricing_non_200_status(mock_urlopen):
     assert result is None
 
 
-@patch('urllib.request.urlopen')
+@patch("urllib.request.urlopen")
 def test_fetch_litellm_pricing_with_custom_timeout(mock_urlopen, sample_litellm_data):
     """Test fetch with custom timeout parameter."""
     mock_response = MagicMock()
     mock_response.status = 200
-    mock_response.read.return_value = json.dumps(sample_litellm_data).encode('utf-8')
+    mock_response.read.return_value = json.dumps(sample_litellm_data).encode("utf-8")
     mock_response.__enter__.return_value = mock_response
     mock_response.__exit__.return_value = None
     mock_urlopen.return_value = mock_response

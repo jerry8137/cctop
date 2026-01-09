@@ -27,7 +27,7 @@ class JSONLParser:
 
         entries = []
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if not line:
@@ -53,25 +53,25 @@ class JSONLParser:
             Optional[TokenUsage]: TokenUsage object if usage data found, None otherwise
         """
         try:
-            message = log_entry.get('message', {})
-            usage = message.get('usage', {})
+            message = log_entry.get("message", {})
+            usage = message.get("usage", {})
 
             if not usage:
                 return None
 
-            input_tokens = usage.get('input_tokens', 0)
-            output_tokens = usage.get('output_tokens', 0)
-            cache_creation_tokens = usage.get('cache_creation_input_tokens', 0)
-            cache_read_tokens = usage.get('cache_read_input_tokens', 0)
+            input_tokens = usage.get("input_tokens", 0)
+            output_tokens = usage.get("output_tokens", 0)
+            cache_creation_tokens = usage.get("cache_creation_input_tokens", 0)
+            cache_read_tokens = usage.get("cache_read_input_tokens", 0)
 
-            timestamp_str = log_entry.get('timestamp', '')
+            timestamp_str = log_entry.get("timestamp", "")
             if timestamp_str:
                 timestamp = date_parser.isoparse(timestamp_str)
             else:
                 timestamp = datetime.now()
 
-            model = message.get('model', '')
-            request_id = log_entry.get('requestId', '')
+            model = message.get("model", "")
+            request_id = log_entry.get("requestId", "")
 
             return TokenUsage(
                 input_tokens=input_tokens,
@@ -101,18 +101,18 @@ class JSONLParser:
         first_entry = entries[0]
         last_entry = entries[-1]
 
-        agent_id = first_entry.get('agentId', '')
-        slug = first_entry.get('slug', '')
-        session_id = first_entry.get('sessionId', '')
-        project_path = first_entry.get('cwd', '')
+        agent_id = first_entry.get("agentId", "")
+        slug = first_entry.get("slug", "")
+        session_id = first_entry.get("sessionId", "")
+        project_path = first_entry.get("cwd", "")
 
-        created_at_str = first_entry.get('timestamp', '')
+        created_at_str = first_entry.get("timestamp", "")
         if created_at_str:
             created_at = date_parser.isoparse(created_at_str)
         else:
             created_at = datetime.now()
 
-        last_activity_str = last_entry.get('timestamp', '')
+        last_activity_str = last_entry.get("timestamp", "")
         if last_activity_str:
             last_activity = date_parser.isoparse(last_activity_str)
         else:
@@ -135,22 +135,22 @@ class JSONLParser:
                 if usage_data.model:
                     model = usage_data.model
 
-            if entry.get('type') in ['user', 'assistant']:
+            if entry.get("type") in ["user", "assistant"]:
                 message_count += 1
 
         return {
-            'agent_id': agent_id,
-            'slug': slug,
-            'session_id': session_id,
-            'project_path': project_path,
-            'created_at': created_at,
-            'last_activity': last_activity,
-            'total_input_tokens': total_input_tokens,
-            'total_output_tokens': total_output_tokens,
-            'total_cache_creation_tokens': total_cache_creation_tokens,
-            'total_cache_read_tokens': total_cache_read_tokens,
-            'message_count': message_count,
-            'model': model,
+            "agent_id": agent_id,
+            "slug": slug,
+            "session_id": session_id,
+            "project_path": project_path,
+            "created_at": created_at,
+            "last_activity": last_activity,
+            "total_input_tokens": total_input_tokens,
+            "total_output_tokens": total_output_tokens,
+            "total_cache_creation_tokens": total_cache_creation_tokens,
+            "total_cache_read_tokens": total_cache_read_tokens,
+            "message_count": message_count,
+            "model": model,
         }
 
     @staticmethod
@@ -168,10 +168,10 @@ class JSONLParser:
 
         last_entry = entries[-1]
 
-        if last_entry.get('type') == 'assistant':
-            message = last_entry.get('message', {})
-            stop_reason = message.get('stop_reason', '')
-            if stop_reason == 'end_turn':
+        if last_entry.get("type") == "assistant":
+            message = last_entry.get("message", {})
+            stop_reason = message.get("stop_reason", "")
+            if stop_reason == "end_turn":
                 return True
 
         return False

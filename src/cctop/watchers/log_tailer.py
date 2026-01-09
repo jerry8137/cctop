@@ -42,7 +42,7 @@ class LogTailer:
             if current_size < last_position:
                 last_position = 0
 
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 f.seek(last_position)
                 new_lines = f.readlines()
                 new_position = f.tell()

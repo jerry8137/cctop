@@ -16,6 +16,7 @@ class TokenUsage:
         model: Claude model identifier
         request_id: Optional request identifier
     """
+
     input_tokens: int
     output_tokens: int
     cache_creation_tokens: int
@@ -32,10 +33,10 @@ class TokenUsage:
             int: Sum of all token types
         """
         return (
-            self.input_tokens +
-            self.output_tokens +
-            self.cache_creation_tokens +
-            self.cache_read_tokens
+            self.input_tokens
+            + self.output_tokens
+            + self.cache_creation_tokens
+            + self.cache_read_tokens
         )
 
     def calculate_cost(self) -> Decimal:
@@ -45,6 +46,7 @@ class TokenUsage:
             Decimal: Cost in USD
         """
         from ..utils.pricing import calculate_cost
+
         return calculate_cost(
             model=self.model,
             input_tokens=self.input_tokens,

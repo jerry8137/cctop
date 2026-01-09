@@ -23,6 +23,7 @@ class SystemMetrics:
         uptime: Application uptime duration
         usage_metrics: Optional usage tracking metrics
     """
+
     total_agents: int = 0
     active_agents: int = 0
     idle_agents: int = 0
@@ -41,6 +42,7 @@ class SystemMetrics:
         """Initialize usage_metrics if not provided."""
         if self.usage_metrics is None:
             from .usage_metrics import UsageMetrics
+
             self.usage_metrics = UsageMetrics()
 
     @property
@@ -51,8 +53,8 @@ class SystemMetrics:
             int: Sum of all token types
         """
         return (
-            self.total_input_tokens +
-            self.total_output_tokens +
-            self.total_cache_creation_tokens +
-            self.total_cache_read_tokens
+            self.total_input_tokens
+            + self.total_output_tokens
+            + self.total_cache_creation_tokens
+            + self.total_cache_read_tokens
         )

@@ -45,6 +45,7 @@ def format_time_ago(dt: datetime) -> str:
     now = datetime.now()
     if dt.tzinfo is not None:
         from dateutil import tz
+
         now = now.replace(tzinfo=tz.tzlocal())
 
     delta = now - dt

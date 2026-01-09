@@ -15,6 +15,7 @@ except ImportError:
         """Simple fallback for cache directory."""
         return str(Path.home() / ".cache" / app_name)
 
+
 logger = logging.getLogger(__name__)
 
 CACHE_TTL_HOURS = 24
@@ -42,14 +43,14 @@ def is_cache_valid() -> bool:
         return False
 
     try:
-        with open(cache_path, 'r') as f:
+        with open(cache_path, "r") as f:
             data = json.load(f)
 
         fetched_at_str = data.get("fetched_at")
         if not fetched_at_str:
             return False
 
-        fetched_at = datetime.fromisoformat(fetched_at_str.replace('Z', '+00:00'))
+        fetched_at = datetime.fromisoformat(fetched_at_str.replace("Z", "+00:00"))
         ttl_hours = data.get("ttl_hours", CACHE_TTL_HOURS)
         expiry_time = fetched_at + timedelta(hours=ttl_hours)
 
@@ -83,7 +84,7 @@ def load_from_cache() -> Optional[dict]:
         return None
 
     try:
-        with open(cache_path, 'r') as f:
+        with open(cache_path, "r") as f:
             data = json.load(f)
 
         # Verify cache structure
@@ -93,7 +94,7 @@ def load_from_cache() -> Optional[dict]:
 
         # Check TTL
         fetched_at_str = data["fetched_at"]
-        fetched_at = datetime.fromisoformat(fetched_at_str.replace('Z', '+00:00'))
+        fetched_at = datetime.fromisoformat(fetched_at_str.replace("Z", "+00:00"))
         ttl_hours = data.get("ttl_hours", CACHE_TTL_HOURS)
         expiry_time = fetched_at + timedelta(hours=ttl_hours)
 
@@ -119,7 +120,9 @@ def load_from_cache() -> Optional[dict]:
             logger.warning("No valid pricing data found in cache")
             return None
 
-        logger.info(f"Loaded {len(pricing_data)} models from cache (fetched {fetched_at})")
+        logger.info(
+            f"Loaded {len(pricing_data)} models from cache (fetched {fetched_at})"
+        )
         return pricing_data
 
     except json.JSONDecodeError as e:
@@ -161,14 +164,14 @@ def save_to_cache(pricing_data: dict) -> bool:
         # Create cache structure
         cache_data = {
             "version": "1.0",
-            "fetched_at": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+            "fetched_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "ttl_hours": CACHE_TTL_HOURS,
-            "pricing": pricing_json
+            "pricing": pricing_json,
         }
 
         # Atomic write: write to temp file then rename
-        temp_path = cache_path.with_suffix('.tmp')
-        with open(temp_path, 'w') as f:
+        temp_path = cache_path.with_suffix(".tmp")
+        with open(temp_path, "w") as f:
             json.dump(cache_data, f, indent=2)
 
         # Atomic rename

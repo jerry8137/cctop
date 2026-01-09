@@ -40,7 +40,7 @@ class SystemPanel(Static):
             cpu_percent = psutil.cpu_percent(interval=0)
             memory = psutil.virtual_memory()
             memory_percent = memory.percent
-            memory_used_gb = memory.used / (1024 ** 3)
+            memory_used_gb = memory.used / (1024**3)
         except Exception:
             cpu_percent = 0
             memory_percent = 0
@@ -55,7 +55,10 @@ class SystemPanel(Static):
             Text("System Resources", style="bold underline"),
             Text(""),
             Text(f"CPU:    {cpu_bar} {cpu_percent:.1f}%", style="cyan"),
-            Text(f"Memory: {mem_bar} {memory_percent:.1f}% ({memory_used_gb:.1f}GB)", style="green"),
+            Text(
+                f"Memory: {mem_bar} {memory_percent:.1f}% ({memory_used_gb:.1f}GB)",
+                style="green",
+            ),
             Text(""),
             Text(f"Uptime: {uptime}", style="blue"),
         ]

@@ -35,7 +35,12 @@ class CCTopApp(App):
         ("ctrl+c", "quit", "Quit"),
     ]
 
-    def __init__(self, claude_home: Path = None, refresh_interval: float = 1.0, offline_mode: bool = False):
+    def __init__(
+        self,
+        claude_home: Path = None,
+        refresh_interval: float = 1.0,
+        offline_mode: bool = False,
+    ):
         """Initialize CCTOP application.
 
         Args:
@@ -78,6 +83,7 @@ class CCTopApp(App):
 
         # Initialize pricing system
         from .utils.pricing import initialize_pricing
+
         self._pricing_source = initialize_pricing(offline_mode=self._offline_mode)
 
         # Update subtitle with pricing source indicator
@@ -108,6 +114,7 @@ class CCTopApp(App):
             file_path: Path to the changed log file
         """
         import time
+
         current_time = time.time()
 
         if current_time - self.last_refresh_time < 0.1:
@@ -172,14 +179,20 @@ class CCTopApp(App):
             "last_activity": "Last Activity",
             "cost": "Cost",
             "tokens": "Tokens",
-            "agent_id": "Agent ID"
+            "agent_id": "Agent ID",
         }
         self.notify(f"Sorting by: {sort_names[self.sort_by]}")
         self.refresh_data()
 
     def action_toggle_filter(self) -> None:
         """Action: Cycle through filter options."""
-        filter_options = [None, AgentStatus.ACTIVE, AgentStatus.IDLE, AgentStatus.WAITING_FOR_USER, AgentStatus.STOPPED]
+        filter_options = [
+            None,
+            AgentStatus.ACTIVE,
+            AgentStatus.IDLE,
+            AgentStatus.WAITING_FOR_USER,
+            AgentStatus.STOPPED,
+        ]
         current_index = filter_options.index(self.filter_status)
         next_index = (current_index + 1) % len(filter_options)
         self.filter_status = filter_options[next_index]
@@ -250,14 +263,14 @@ Keyboard shortcuts:
   c          - Toggle cost/system panels
   Enter      - Show agent details
   ?          - Show help
-        """
+        """,
     )
 
     parser.add_argument(
         "--log-dir",
         type=Path,
         default=Path.home() / ".claude",
-        help="Path to Claude Code log directory (default: ~/.claude)"
+        help="Path to Claude Code log directory (default: ~/.claude)",
     )
 
     parser.add_argument(
@@ -265,33 +278,29 @@ Keyboard shortcuts:
         type=float,
         default=1.0,
         metavar="SECONDS",
-        help="Refresh interval in seconds (default: 1.0)"
+        help="Refresh interval in seconds (default: 1.0)",
     )
 
     parser.add_argument(
         "--no-watch",
         action="store_true",
-        help="Disable file watching (use polling only)"
+        help="Disable file watching (use polling only)",
     )
 
     parser.add_argument(
         "--offline",
         action="store_true",
-        help="Disable network operations (use cached/bundled pricing)"
+        help="Disable network operations (use cached/bundled pricing)",
     )
 
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="cctop 0.2.0"
-    )
+    parser.add_argument("--version", action="version", version="cctop 0.2.0")
 
     args = parser.parse_args()
 
     app = CCTopApp(
         claude_home=args.log_dir,
         refresh_interval=args.refresh,
-        offline_mode=args.offline
+        offline_mode=args.offline,
     )
 
     # Disable file watcher if requested

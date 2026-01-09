@@ -41,7 +41,7 @@ class NotificationBar(Static):
             agent = self.waiting_agents[0]
             return Text(
                 f"⚠ Agent '{agent.slug}' is waiting for user input!",
-                style="bold yellow on dark_red"
+                style="bold yellow on dark_red",
             )
         else:
             count = len(self.waiting_agents)
@@ -50,5 +50,5 @@ class NotificationBar(Static):
                 names += f", +{count - 3} more"
             return Text(
                 f"⚠ {count} agents waiting for input: {names}",
-                style="bold yellow on dark_red"
+                style="bold yellow on dark_red",
             )

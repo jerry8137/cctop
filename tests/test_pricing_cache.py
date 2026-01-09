@@ -43,7 +43,9 @@ def mock_cache_path(tmp_path, monkeypatch):
     def mock_get_cache_path():
         return cache_file
 
-    monkeypatch.setattr("src.cctop.utils.pricing_cache.get_cache_path", mock_get_cache_path)
+    monkeypatch.setattr(
+        "src.cctop.utils.pricing_cache.get_cache_path", mock_get_cache_path
+    )
     return cache_file
 
 
@@ -62,7 +64,7 @@ def test_save_to_cache(mock_cache_path, sample_pricing_data):
     assert mock_cache_path.exists()
 
     # Verify JSON structure
-    with open(mock_cache_path, 'r') as f:
+    with open(mock_cache_path, "r") as f:
         data = json.load(f)
 
     assert data["version"] == "1.0"
@@ -98,23 +100,23 @@ def test_load_from_cache_missing(mock_cache_path):
 def test_load_from_cache_expired(mock_cache_path, sample_pricing_data):
     """Test loading expired cache."""
     # Create cache with old timestamp
-    old_timestamp = (datetime.now(timezone.utc) - timedelta(hours=CACHE_TTL_HOURS + 1))
+    old_timestamp = datetime.now(timezone.utc) - timedelta(hours=CACHE_TTL_HOURS + 1)
 
     cache_data = {
         "version": "1.0",
-        "fetched_at": old_timestamp.isoformat().replace('+00:00', 'Z'),
+        "fetched_at": old_timestamp.isoformat().replace("+00:00", "Z"),
         "ttl_hours": CACHE_TTL_HOURS,
         "pricing": {
             "claude-sonnet-4-5": {
                 "input": "0.000003",
                 "output": "0.000015",
                 "cache_creation": "0.00000375",
-                "cache_read": "0.0000003"
+                "cache_read": "0.0000003",
             }
-        }
+        },
     }
 
-    with open(mock_cache_path, 'w') as f:
+    with open(mock_cache_path, "w") as f:
         json.dump(cache_data, f)
 
     result = load_from_cache()
@@ -134,10 +136,10 @@ def test_load_from_cache_invalid_structure(mock_cache_path):
     # Missing "pricing" field
     cache_data = {
         "version": "1.0",
-        "fetched_at": datetime.now(timezone.utc).isoformat()
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
     }
 
-    with open(mock_cache_path, 'w') as f:
+    with open(mock_cache_path, "w") as f:
         json.dump(cache_data, f)
 
     result = load_from_cache()
@@ -148,19 +150,19 @@ def test_load_from_cache_invalid_pricing_data(mock_cache_path):
     """Test loading cache with invalid pricing values."""
     cache_data = {
         "version": "1.0",
-        "fetched_at": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+        "fetched_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "ttl_hours": CACHE_TTL_HOURS,
         "pricing": {
             "claude-sonnet-4-5": {
                 "input": "not_a_number",
                 "output": "0.000015",
                 "cache_creation": "0.00000375",
-                "cache_read": "0.0000003"
+                "cache_read": "0.0000003",
             }
-        }
+        },
     }
 
-    with open(mock_cache_path, 'w') as f:
+    with open(mock_cache_path, "w") as f:
         json.dump(cache_data, f)
 
     result = load_from_cache()
@@ -181,16 +183,16 @@ def test_is_cache_valid_missing(mock_cache_path):
 
 def test_is_cache_valid_expired(mock_cache_path):
     """Test cache validity check for expired cache."""
-    old_timestamp = (datetime.now(timezone.utc) - timedelta(hours=CACHE_TTL_HOURS + 1))
+    old_timestamp = datetime.now(timezone.utc) - timedelta(hours=CACHE_TTL_HOURS + 1)
 
     cache_data = {
         "version": "1.0",
-        "fetched_at": old_timestamp.isoformat().replace('+00:00', 'Z'),
+        "fetched_at": old_timestamp.isoformat().replace("+00:00", "Z"),
         "ttl_hours": CACHE_TTL_HOURS,
-        "pricing": {}
+        "pricing": {},
     }
 
-    with open(mock_cache_path, 'w') as f:
+    with open(mock_cache_path, "w") as f:
         json.dump(cache_data, f)
 
     assert is_cache_valid() is False
@@ -204,7 +206,9 @@ def test_cache_directory_creation(tmp_path, monkeypatch, sample_pricing_data):
     def mock_get_cache_path():
         return cache_file
 
-    monkeypatch.setattr("src.cctop.utils.pricing_cache.get_cache_path", mock_get_cache_path)
+    monkeypatch.setattr(
+        "src.cctop.utils.pricing_cache.get_cache_path", mock_get_cache_path
+    )
 
     assert not cache_dir.exists()
 
@@ -223,7 +227,7 @@ def test_save_to_cache_atomic_write(mock_cache_path, sample_pricing_data):
     assert mock_cache_path.exists()
 
     # Temp file should not exist after successful write
-    temp_file = mock_cache_path.with_suffix('.tmp')
+    temp_file = mock_cache_path.with_suffix(".tmp")
     assert not temp_file.exists()
 
 
@@ -241,4 +245,6 @@ def test_round_trip(mock_cache_path, sample_pricing_data):
     for model in sample_pricing_data:
         assert model in loaded_data
         for rate_type in ["input", "output", "cache_creation", "cache_read"]:
-            assert loaded_data[model][rate_type] == sample_pricing_data[model][rate_type]
+            assert (
+                loaded_data[model][rate_type] == sample_pricing_data[model][rate_type]
+            )

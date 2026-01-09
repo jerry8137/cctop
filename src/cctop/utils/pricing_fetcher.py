@@ -47,15 +47,25 @@ def _normalize_litellm_model_name(model_name: str) -> str:
     # Match to Claude model families
     if "opus-4" in model_lower or ("opus" in model_lower and "4.5" in model_lower):
         return "claude-opus-4-5"
-    elif "sonnet-4" in model_lower or ("sonnet" in model_lower and "4.5" in model_lower):
+    elif "sonnet-4" in model_lower or (
+        "sonnet" in model_lower and "4.5" in model_lower
+    ):
         return "claude-sonnet-4-5"
     elif "3-5-sonnet" in model_lower or "3.5-sonnet" in model_lower:
         return "claude-3-5-sonnet"
-    elif "3-opus" in model_lower or ("opus" in model_lower and "3" in model_lower and "4" not in model_lower):
+    elif "3-opus" in model_lower or (
+        "opus" in model_lower and "3" in model_lower and "4" not in model_lower
+    ):
         return "claude-3-opus"
-    elif "3-5-haiku" in model_lower or "3.5-haiku" in model_lower or "haiku-4" in model_lower:
+    elif (
+        "3-5-haiku" in model_lower
+        or "3.5-haiku" in model_lower
+        or "haiku-4" in model_lower
+    ):
         return "claude-3-5-haiku"
-    elif "3-haiku" in model_lower or ("haiku" in model_lower and "3" in model_lower and "4" not in model_lower):
+    elif "3-haiku" in model_lower or (
+        "haiku" in model_lower and "3" in model_lower and "4" not in model_lower
+    ):
         return "claude-3-haiku"
 
     return model_lower
@@ -83,7 +93,9 @@ def convert_litellm_to_internal(litellm_data: dict) -> dict:
 
     for model_name, model_data in litellm_data.items():
         # Only process Claude/Anthropic models
-        if not any(keyword in model_name.lower() for keyword in ["claude", "anthropic"]):
+        if not any(
+            keyword in model_name.lower() for keyword in ["claude", "anthropic"]
+        ):
             continue
 
         try:
@@ -105,7 +117,9 @@ def convert_litellm_to_internal(litellm_data: dict) -> dict:
             pricing_entry = {
                 "input": _convert_scientific_to_decimal(input_cost),
                 "output": _convert_scientific_to_decimal(output_cost),
-                "cache_creation": _convert_scientific_to_decimal(cache_creation_cost or 0.0),
+                "cache_creation": _convert_scientific_to_decimal(
+                    cache_creation_cost or 0.0
+                ),
                 "cache_read": _convert_scientific_to_decimal(cache_read_cost or 0.0),
             }
 
@@ -116,7 +130,9 @@ def convert_litellm_to_internal(litellm_data: dict) -> dict:
                 logger.debug(f"Added pricing for {normalized_name} from {model_name}")
             else:
                 # If we already have this model, keep existing (assumes first is most recent)
-                logger.debug(f"Skipping duplicate {normalized_name} (already have pricing)")
+                logger.debug(
+                    f"Skipping duplicate {normalized_name} (already have pricing)"
+                )
 
         except (KeyError, ValueError, TypeError) as e:
             logger.warning(f"Invalid pricing data for {model_name}: {e}")
@@ -139,8 +155,7 @@ def fetch_litellm_pricing(timeout: int = TIMEOUT_SECONDS) -> Optional[dict]:
 
         # Create request with timeout
         req = urllib.request.Request(
-            LITELLM_PRICING_URL,
-            headers={'User-Agent': 'cctop/0.2.0'}
+            LITELLM_PRICING_URL, headers={"User-Agent": "cctop/0.2.0"}
         )
 
         with urllib.request.urlopen(req, timeout=timeout) as response:
@@ -149,7 +164,7 @@ def fetch_litellm_pricing(timeout: int = TIMEOUT_SECONDS) -> Optional[dict]:
                 return None
 
             # Read and parse JSON
-            data = json.loads(response.read().decode('utf-8'))
+            data = json.loads(response.read().decode("utf-8"))
 
             # Convert to internal format
             internal_pricing = convert_litellm_to_internal(data)
@@ -158,7 +173,9 @@ def fetch_litellm_pricing(timeout: int = TIMEOUT_SECONDS) -> Optional[dict]:
                 logger.warning("No Claude models found in LiteLLM data")
                 return None
 
-            logger.info(f"Fetched pricing for {len(internal_pricing)} Claude models from LiteLLM")
+            logger.info(
+                f"Fetched pricing for {len(internal_pricing)} Claude models from LiteLLM"
+            )
             return internal_pricing
 
     except urllib.error.HTTPError as e:

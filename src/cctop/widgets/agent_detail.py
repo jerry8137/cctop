@@ -7,7 +7,12 @@ from textual.containers import Container, Vertical
 from rich.text import Text
 
 from ..models.agent import Agent
-from ..utils.formatting import format_tokens, format_cost, format_time_ago, format_duration
+from ..utils.formatting import (
+    format_tokens,
+    format_cost,
+    format_time_ago,
+    format_duration,
+)
 
 
 class AgentDetail(ModalScreen):
@@ -83,15 +88,29 @@ class AgentDetail(ModalScreen):
             Text(f"Working Dir:     {a.current_cwd}", style="blue"),
             Text(""),
             Text("Token Usage:", style="bold underline"),
-            Text(f"  Input:         {format_tokens(a.total_input_tokens)}", style="cyan"),
-            Text(f"  Output:        {format_tokens(a.total_output_tokens)}", style="green"),
-            Text(f"  Cache Create:  {format_tokens(a.total_cache_creation_tokens)}", style="yellow"),
-            Text(f"  Cache Read:    {format_tokens(a.total_cache_read_tokens)}", style="blue"),
+            Text(
+                f"  Input:         {format_tokens(a.total_input_tokens)}", style="cyan"
+            ),
+            Text(
+                f"  Output:        {format_tokens(a.total_output_tokens)}",
+                style="green",
+            ),
+            Text(
+                f"  Cache Create:  {format_tokens(a.total_cache_creation_tokens)}",
+                style="yellow",
+            ),
+            Text(
+                f"  Cache Read:    {format_tokens(a.total_cache_read_tokens)}",
+                style="blue",
+            ),
             Text(f"  Messages:      {a.message_count}", style="white"),
             Text(""),
             Text(f"Cost:            {format_cost(a.total_cost)}", style="bold magenta"),
             Text(""),
-            Text(f"Created:         {a.created_at.strftime('%Y-%m-%d %H:%M:%S')}", style="dim"),
+            Text(
+                f"Created:         {a.created_at.strftime('%Y-%m-%d %H:%M:%S')}",
+                style="dim",
+            ),
             Text(f"Last Activity:   {format_time_ago(a.last_activity)}", style="dim"),
         ]
 

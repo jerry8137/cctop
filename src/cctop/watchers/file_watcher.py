@@ -30,7 +30,7 @@ class ClaudeLogHandler(FileSystemEventHandler):
 
         file_path = Path(event.src_path)
 
-        if file_path.suffix == '.jsonl' and 'agent-' in file_path.name:
+        if file_path.suffix == ".jsonl" and "agent-" in file_path.name:
             self.callback(file_path)
 
     def on_created(self, event: FileSystemEvent):
@@ -44,7 +44,7 @@ class ClaudeLogHandler(FileSystemEventHandler):
 
         file_path = Path(event.src_path)
 
-        if file_path.suffix == '.jsonl' and 'agent-' in file_path.name:
+        if file_path.suffix == ".jsonl" and "agent-" in file_path.name:
             self.callback(file_path)
 
 
